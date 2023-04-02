@@ -18,6 +18,8 @@ import com.user.service.dto.UserDTO;
 import com.user.service.entity.Game;
 import com.user.service.service.UserService;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -31,6 +33,7 @@ public class UserController {
 		return ResponseEntity.ok(users);
 	}
 	
+	@CircuitBreaker(name = "userCB",fallbackMethod = "fallBackGetUser")
 	@GetMapping("/{userId}")
 	public ResponseEntity<UserDTO> getUserById(@PathVariable(name = "userId")String userId){
 		UserDTO  user = userService.findUserById(userId);
@@ -43,9 +46,22 @@ public class UserController {
 		return new ResponseEntity<>(user,HttpStatus.CREATED);
 	}
 	
+	@CircuitBreaker(name = "gameCB",fallbackMethod = "fallBackCreateGame")
 	@PostMapping("/game")
 	public ResponseEntity<Game> saveGame(@RequestBody Game game){
 		Game newGame = userService.createGame(game);
 		return new ResponseEntity<>(newGame,HttpStatus.CREATED);
 	}
+	
+	
+	//Metodos para nuestros fallbacks
+	
+	private ResponseEntity<UserDTO> fallBackGetUser(@PathVariable(name = "userId")String userId,RuntimeException exception){
+		return new ResponseEntity("El usuario" + userId +" no esta disponible",HttpStatus.OK);
+	}
+	
+	private ResponseEntity<Game> fallBackCreateGame(@RequestBody Game game,RuntimeException exception){
+		return new ResponseEntity("El servicio de registrar juegos no esta disponible",HttpStatus.OK);
+	}
+	
 }
