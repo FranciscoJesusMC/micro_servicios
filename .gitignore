@@ -1,3 +1,4 @@
 .metadata
 *.json
 vault/
+zipkin-server-2.23.18-exec.jar
