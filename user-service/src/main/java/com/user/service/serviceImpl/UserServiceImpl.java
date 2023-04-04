@@ -7,8 +7,13 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -88,9 +93,15 @@ public class UserServiceImpl implements UserService {
 	public UserDTO findUserById(String userId) {
 		User user = userRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User", "id", userId));
 		
-		Review[] reviewsOfUser = restTemplate.getForObject("http://localhost:8082/api/review/user/"+user.getUserId(), Review[].class);
+		//Le pasamos el jwt a la solicitud
+		Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Authorization", "Bearer " + jwt.getTokenValue());
 		
-		List<Review> reviews = Arrays.asList(reviewsOfUser);
+		
+		ResponseEntity<Review[]> reviewsOfUser = restTemplate.exchange("http://localhost:8082/api/review/user/"+user.getUserId(),HttpMethod.GET,new HttpEntity<>(headers), Review[].class);
+		
+		List<Review> reviews = Arrays.asList(reviewsOfUser.getBody());
 		
 		List<Review> reviewsList = reviews.stream().map(review ->{
 			
@@ -126,5 +137,15 @@ public class UserServiceImpl implements UserService {
 		Game newGame = feignClient.save(game);
 		return newGame;
 	}
+
+	//List games from user
+	@Override
+	public List<Game> listAllGames() {
+		List<Game> games = feignClient.getAllGames();
+		return games;
+		
+	}
 	
+	
+
 }

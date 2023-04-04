@@ -53,6 +53,11 @@ public class UserController {
 		return new ResponseEntity<>(newGame,HttpStatus.CREATED);
 	}
 	
+	@GetMapping("/allGames")
+	public ResponseEntity<List<Game>> getAllGames(){
+		List<Game> games = userService.listAllGames();
+		return ResponseEntity.ok(games);
+	}
 	
 	//Metodos para nuestros fallbacks
 	

@@ -14,4 +14,6 @@ public interface UserService {
 	public UserDTO createUser(UserDTO userDTO);
 	
 	public Game createGame(Game game);
+	
+	public List<Game> listAllGames();
 }
