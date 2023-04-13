@@ -27,7 +27,7 @@ public class AuthUserService {
 
 	public AuthUser create(AuthUserDTO dto) {
 		Optional<AuthUser> user = authUserRepository.findByUsername(dto.getUsername());
-		if(!user.isPresent()) {
+		if(user.isPresent()) {
 			return null;
 		}
 		
